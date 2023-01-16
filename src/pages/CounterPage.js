@@ -1,14 +1,95 @@
-import useCounter from "../hooks/useCounter";
+import { useReducer } from "react";
 import Button from "../components/Button";
+import Panel from "../components/Panel";
+
+const INCREMENT = "increment";
+const DECREMENT = "decrement";
+const VALUE_TO_ADD = "change_value_to_add";
+const ADD_VALUE_TO_COUNT = "add_value_to_count";
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case INCREMENT:
+      return {
+        ...state,
+        count: state.count + 1,
+      };
+    case DECREMENT:
+      return {
+        ...state,
+        count: state.count - 1,
+      };
+    case VALUE_TO_ADD:
+      return {
+        ...state,
+        valueToAdd: action.payload,
+      };
+    case ADD_VALUE_TO_COUNT:
+      return {
+        ...state,
+        count: state.count + state.valueToAdd,
+        valueToAdd: 0,
+      };
+    default:
+      return state;
+  }
+};
 
 const CounterPage = ({ initialCounter }) => {
-  const { count, increment } = useCounter(initialCounter);
+  const initialState = {
+    count: initialCounter,
+    valueToAdd: 0,
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const increment = () => {
+    dispatch({
+      type: INCREMENT,
+      payload: 1,
+    });
+  };
+
+  const decrement = () => {
+    dispatch({
+      type: DECREMENT,
+      payload: 1,
+    });
+  };
+
+  const handleChange = (e) => {
+    const value = parseInt(e.target.value) || 0;
+    dispatch({
+      type: VALUE_TO_ADD,
+      payload: value,
+    });
+  };
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    dispatch({
+      type: ADD_VALUE_TO_COUNT,
+    });
+  };
 
   return (
-    <div>
-      <h1> Count is {count}</h1>
-      <Button onClick={increment}>Increment</Button>
-    </div>
+    <Panel className="m-3">
+      <h1> Count is {state.count}</h1>
+      <div className="flex flex-row">
+        <Button onClick={increment}>Increment</Button>
+        <Button onClick={decrement}>Decrement</Button>
+      </div>
+      <form onSubmit={handleFormSubmit}>
+        <label>Add a lot!</label>
+        <input
+          type="number"
+          value={state.valueToAdd || ""}
+          onChange={handleChange}
+          className="p-1 m-3 bg-gray-50 border border-gray-300"
+        />
+        <Button>Add it!</Button>
+      </form>
+    </Panel>
   );
 };
 
